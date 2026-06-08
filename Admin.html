@@ -3,53 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balenrista - Display</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>Balenrista - Admin Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-dark: #000000;
             --card-dark: #1C1C1E;
             --text-main: #F5F5F5;
+            --text-muted: #8E8D93;
             --accent-yellow: #EEDC82;
             --accent-orange: #E66430;
+            --radius-lg: 30px;
         }
 
-        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-dark); margin: 0; padding: 30px; height: 100vh; box-sizing: border-box; display: flex; gap: 30px; overflow: hidden; color: var(--text-main); }
-        .left-panel, .right-panel { flex: 1; display: flex; flex-direction: column; gap: 30px; }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 120px; /* เผื่อที่ให้แถบเมนูล่าง */
+            display: flex;
+            justify-content: center;
+        }
+
+        .container { width: 100%; max-width: 420px; }
+
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { font-size: 28px; margin: 0; font-weight: 700; color: var(--accent-yellow); }
+        .user-profile { background: var(--card-dark); padding: 8px 16px; border-radius: 20px; font-size: 14px; color: var(--text-muted); }
+
+        /* การ์ดหลัก */
+        .card {
+            background-color: var(--card-dark);
+            border-radius: var(--radius-lg);
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
         
-        /* การ์ดซ้าย (คิว) */
-        .card { background-color: var(--card-dark); border-radius: 40px; padding: 50px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+        .card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: var(--accent-orange);
+        }
+
+        .queue-label { font-size: 16px; color: var(--text-muted); margin-bottom: 10px; font-weight: 500; }
+        .queue-number { font-size: 100px; font-weight: 700; margin: 0; color: var(--text-main); line-height: 1; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+
+        /* ส่วนจัดการสื่อ (ซ่อนไว้เป็นค่าเริ่มต้น) */
+        #media-section { display: none; }
+        .media-box { background: var(--card-dark); border-radius: var(--radius-lg); padding: 25px; margin-bottom: 20px; }
+        .media-box h3 { margin-top: 0; font-size: 18px; color: var(--accent-yellow); }
         
-        .q-ready { font-size: 180px; font-weight: 700; color: var(--bg-dark); background: var(--accent-orange); padding: 20px 80px; border-radius: 40px; line-height: 1; margin-top: 30px; box-shadow: 0 15px 40px rgba(230, 100, 48, 0.4); }
+        .file-upload-wrapper {
+            position: relative; width: 100%; height: 120px; border: 2px dashed #444; border-radius: 20px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center; margin-bottom: 15px;
+            background: #121212; transition: 0.3s;
+        }
+        .file-upload-wrapper:active { background: #222; }
+        .file-upload-wrapper input[type="file"] {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+        }
+        .file-upload-wrapper svg { width: 30px; height: 30px; color: var(--accent-orange); margin-bottom: 10px; }
+        .file-upload-wrapper span { font-size: 14px; color: var(--text-muted); }
+
+        /* แถบเมนูล่าง (Bottom Nav แบบในรูป) */
+        .bottom-nav {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            background-color: var(--card-dark);
+            padding: 10px 20px; border-radius: 50px;
+            display: flex; align-items: center; justify-content: space-between;
+            width: 90%; max-width: 350px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: transparent; border: none; padding: 10px; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: 0.3s; width: 55px; height: 55px;
+        }
+
+        .nav-btn svg { width: 26px; height: 26px; stroke: #666; stroke-width: 2; fill: none; transition: 0.3s; }
+
+        /* ปุ่ม Home แบบ Active (วงกลมเหลือง) */
+        .nav-btn.active { background-color: var(--accent-yellow); }
+        .nav-btn.active svg { stroke: var(--bg-dark); fill: var(--bg-dark); }
+
+        /* ปุ่ม Plus (เพิ่มคิว) */
+        .nav-btn.add-btn svg { stroke: var(--accent-yellow); stroke-width: 2.5; }
+        .nav-btn.add-btn:active { transform: scale(0.9); background: rgba(238, 220, 130, 0.2); }
+
+        .nav-btn:active svg { stroke: #FFF; }
         
-        /* การ์ดขวา (สื่อโฆษณา) */
-        .media-container { width: 100%; height: 100%; border-radius: 40px; overflow: hidden; position: relative; background: #111; }
-        .media-content { width: 100%; height: 100%; object-fit: cover; }
-        .brand-logo { position: absolute; top: 30px; right: 40px; background: rgba(238, 220, 130, 0.9); padding: 12px 30px; border-radius: 50px; font-size: 26px; font-weight: 700; color: var(--bg-dark); z-index: 10; }
+        .status-badge { display: inline-block; padding: 8px 15px; border-radius: 20px; background: rgba(230, 100, 48, 0.2); color: var(--accent-orange); font-size: 14px; font-weight: 600; margin-top: 15px;}
     </style>
 </head>
 <body>
 
-    <div class="left-panel">
-        <div class="card">
-            <h2 style="color: var(--accent-yellow); font-size: 60px; margin: 0;">✅ Ready</h2>
-            <p style="font-size: 26px; color: #8E8D93; margin-top: 10px;">เชิญรับเครื่องดื่มที่เคาน์เตอร์ค่ะ</p>
-            <div id="display-ready" class="q-ready">...</div>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>Balenrista.</h1>
+        <div class="user-profile">Admin Panel</div>
     </div>
 
-    <div class="right-panel">
-        <div class="media-container">
-            <div class="brand-logo">Balenrista.</div>
-            <div id="media-viewer" style="width:100%; height:100%;">
-                <img class="media-content" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80">
+    <div id="queue-section">
+        <div class="card">
+            <div class="queue-label">คิวที่พร้อมเสิร์ฟ (Now Serving)</div>
+            <h2 id="current-queue" class="queue-number">...</h2>
+            <div class="status-badge" id="btn-recall" style="cursor:pointer;">📢 กดเพื่อเรียกซ้ำ</div>
+        </div>
+        <p style="text-align: center; color: var(--text-muted); font-size: 14px;">กดปุ่ม ➕ ด้านล่างเพื่อเรียกคิวถัดไป</p>
+    </div>
+
+    <div id="media-section">
+        <div class="media-box">
+            <h3>🖼️ เปลี่ยนรูปโปรโมทบนจอทีวี</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 20px;">เลือกรูปภาพจากมือถือของคุณเพื่อไปแสดงที่จอลูกค้า</p>
+            
+            <div class="file-upload-wrapper">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span>กดเพื่อเลือกรูปภาพ (Image)</span>
+                <input type="file" id="upload-image" accept="image/*">
             </div>
+            <div id="upload-status" style="color: #4CAF50; font-size: 14px; text-align: center; display: none;">✅ เปลี่ยนรูปสำเร็จ!</div>
+        </div>
+
+        <div class="media-box">
+            <h3>🎥 ตั้งค่าวิดีโอ (Video)</h3>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">*วิดีโอมีขนาดใหญ่ แนะนำให้ใช้วิธีวางลิงก์ (URL) ของวิดีโอแทนครับ</p>
+            <input type="text" id="video-url" placeholder="วางลิงก์ .mp4 ที่นี่" style="width: 100%; box-sizing: border-box; padding: 15px; border-radius: 15px; border: 1px solid #444; background: #121212; color: #FFF; font-family: 'Prompt'; margin-bottom: 10px;">
+            <button id="btn-set-video" style="width: 100%; padding: 15px; border-radius: 15px; background: var(--accent-orange); color: white; border: none; font-weight: 600; cursor: pointer; font-family: 'Prompt';">อัปเดตวิดีโอ</button>
         </div>
     </div>
+</div>
+
+<nav class="bottom-nav">
+    <button id="nav-home" class="nav-btn active">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </button>
+    
+    <button id="nav-next" class="nav-btn add-btn">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </button>
+
+    <button id="nav-media" class="nav-btn">
+        <svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+    </button>
+
+    <button id="nav-refresh" class="nav-btn">
+        <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+    </button>
+</nav>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDITDHyj_6Z80vTp209yHUR8QHR2fAh-R0",
@@ -60,23 +171,63 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    
-    // อัปเดตเลขคิว
-    onValue(ref(db, 'queue/current'), (snapshot) => {
-        let currentNumber = snapshot.val();
-        document.getElementById('display-ready').innerText = currentNumber !== null ? currentNumber : "0";
+    const queueRef = ref(db, 'queue/current');
+    const mediaRef = ref(db, 'media/current');
+
+    // สลับหน้าจอ Home กับ Camera
+    document.getElementById('nav-home').addEventListener('click', () => {
+        document.getElementById('queue-section').style.display = 'block';
+        document.getElementById('media-section').style.display = 'none';
+        document.getElementById('nav-home').classList.add('active');
+        document.getElementById('nav-media').classList.remove('active');
     });
 
-    // อัปเดตสื่อโฆษณา (รูปภาพ/วิดีโอ)
-    onValue(ref(db, 'media/current'), (snapshot) => {
-        let media = snapshot.val();
-        let viewer = document.getElementById('media-viewer');
-        if(media) {
-            if(media.type === 'image') {
-                viewer.innerHTML = `<img class="media-content" src="${media.data}">`;
-            } else if (media.type === 'video') {
-                viewer.innerHTML = `<video class="media-content" autoplay loop muted><source src="${media.data}" type="video/mp4"></video>`;
-            }
+    document.getElementById('nav-media').addEventListener('click', () => {
+        document.getElementById('queue-section').style.display = 'none';
+        document.getElementById('media-section').style.display = 'block';
+        document.getElementById('nav-media').classList.add('active');
+        document.getElementById('nav-home').classList.remove('active');
+    });
+
+    // ดึงเลขคิวปัจจุบัน
+    onValue(queueRef, (snapshot) => {
+        let current = snapshot.val();
+        document.getElementById('current-queue').innerText = current !== null ? current : "0";
+    });
+
+    // ปุ่ม Plus (เรียกคิวถัดไป)
+    document.getElementById('nav-next').addEventListener('click', () => {
+        get(queueRef).then((snapshot) => {
+            let current = snapshot.val() || 0;
+            set(queueRef, current + 1);
+        });
+    });
+
+    // ปุ่ม Refresh (รีเซ็ต)
+    document.getElementById('nav-refresh').addEventListener('click', () => {
+        if(confirm("ต้องการรีเซ็ตคิวเป็น 0 หรือไม่?")) set(queueRef, 0);
+    });
+
+    // --- ฟังก์ชันอัปโหลดรูปภาพ (แปลงเป็น Base64 ส่งเข้า Firebase) ---
+    document.getElementById('upload-image').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onloadend = function() {
+            set(mediaRef, { type: 'image', data: reader.result });
+            document.getElementById('upload-status').style.display = 'block';
+            setTimeout(() => document.getElementById('upload-status').style.display = 'none', 3000);
+        }
+        reader.readAsDataURL(file); // แปลงรูปเป็น Data URL
+    });
+
+    // --- ฟังก์ชันอัปเดตวิดีโอ (ใช้ URL) ---
+    document.getElementById('btn-set-video').addEventListener('click', function() {
+        const url = document.getElementById('video-url').value;
+        if(url) {
+            set(mediaRef, { type: 'video', data: url });
+            alert("อัปเดตวิดีโอขึ้นจอทีวีแล้ว!");
+            document.getElementById('video-url').value = '';
         }
     });
 </script>
