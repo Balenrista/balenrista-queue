@@ -37,7 +37,6 @@
         .media-content { width: 100%; height: 100%; object-fit: cover; }
         .brand-logo { position: absolute; top: 30px; right: 40px; background: rgba(238, 220, 130, 0.9); padding: 12px 30px; border-radius: 50px; font-size: 26px; font-weight: 700; color: var(--bg-dark); z-index: 10; }
 
-        /* หน้าต่างทะลวงบล็อกเสียง */
         #unlock-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
             background: rgba(0, 0, 0, 0.95); z-index: 9999; 
@@ -53,7 +52,6 @@
 </head>
 <body>
 
-    <!-- หน้าต่างนี้จะโผล่มาตอนเปิดเว็บครั้งแรก เพื่อบังคับให้เรากดปลดล็อก -->
     <div id="unlock-overlay">
         <div class="unlock-btn">👆 แตะที่นี่เพื่อเริ่มระบบ</div>
         <p style="color: #8E8D93; font-size: 24px;">(เพื่อปลดล็อกระบบเสียงของ iPad)</p>
@@ -76,6 +74,8 @@
         </div>
     </div>
 
+    <audio id="queue-audio" playsinline></audio>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
@@ -91,71 +91,89 @@
     const db = getDatabase(app);
     
     let isFirstLoad = true;
-    let audioUnlocked = false; // ตัวแปรยืนยันว่าประตูเสียงเปิดแล้ว
+    let isFirstRecallLoad = true;
+    let audioUnlocked = false; 
+    let player = document.getElementById('queue-audio');
 
-    // โลจิกทะลวงประตูเสียงเมื่อกดปุ่ม
+    // ฟังก์ชันส่วนกลางสำหรับการเล่นเสียงคิว (ใช้ร่วมกันทั้งตอนเปลี่ยนเลขและตอนเรียกซ้ำ)
+    function playQueueSequence(currentNumber) {
+        if (currentNumber === null || currentNumber === 0 || currentNumber === "0") return;
+
+        try {
+            // เอฟเฟกต์ขยายตัวเลขคิวแบบ Pop-up ดึงดูดสายตา
+            let displayElement = document.getElementById('display-ready');
+            displayElement.style.transform = "scale(1.15)";
+            setTimeout(() => { displayElement.style.transform = "scale(1)"; }, 300);
+
+            let numStr = currentNumber.toString();
+            let playlist = [];
+
+            // 1. จัดคิวไฟล์ตัวเลขเสียง Botnoi ตามเลขคิว
+            for (let i = 0; i < numStr.length; i++) {
+                let digit = numStr[i];
+                if (digit >= '0' && digit <= '9') {
+                    playlist.push(digit + ".mp3");
+                }
+            }
+            
+            // 2. ปิดท้ายด้วยประโยคเชิญ
+            playlist.push("Call.mp3"); 
+
+            player.volume = 1.0;
+
+            // 3. เริ่มเล่นต่อเนื่องกันแบบลูกโซ่
+            function playSequence(index) {
+                if (index >= playlist.length) return;
+                player.src = playlist[index];
+                player.onended = function() { 
+                    playSequence(index + 1); 
+                };
+                player.play().catch(e => console.log("เสียงสะดุดจากเบราว์เซอร์"));
+            }
+
+            if (playlist.length > 0) {
+                playSequence(0);
+            }
+
+        } catch (e) {
+            console.log("Error playing sequence", e);
+        }
+    }
+
+    // ปลดล็อกเกราะป้องกันเสียงของ Apple
     document.getElementById('unlock-overlay').addEventListener('click', function() {
-        // แอบเล่นไฟล์เสียง 0.mp3 แบบเบามากๆ 1 ครั้งเพื่อหลอก Apple ให้เปิดประตู
-        let unlockSound = new Audio("0.mp3");
-        unlockSound.volume = 0.01;
-        
-        let playPromise = unlockSound.play();
+        player.src = "0.mp3";
+        player.volume = 0.01;
+        let playPromise = player.play();
         if (playPromise !== undefined) {
             playPromise.then(() => {
-                setTimeout(() => unlockSound.pause(), 100);
-                audioUnlocked = true; // เปิดประตูเสียงสำเร็จ!
-                
-                // フェードหน้าต่างทิ้งไปให้เห็นหน้าคิว
+                setTimeout(() => player.pause(), 100);
+                audioUnlocked = true;
                 let overlay = document.getElementById('unlock-overlay');
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
-            }).catch(e => {
-                console.log("กรุณากดใหม่อีกครั้ง");
-            });
+            }).catch(e => console.log("รอสิทธิ์"));
         }
     });
 
-    // ระบบอัปเดตเลขคิว
+    // ตรวจจับ: เมื่อมีการเปลี่ยนหมายเลขคิวใหม่
     onValue(ref(db, 'queue/current'), (snapshot) => {
         let currentNumber = snapshot.val();
-        let displayElement = document.getElementById('display-ready');
-        
-        displayElement.innerText = currentNumber !== null ? currentNumber : "0";
+        document.getElementById('display-ready').innerText = currentNumber !== null ? currentNumber : "0";
 
-        // จะเล่นเสียงได้ก็ต่อเมื่อ เลขคิวเปลี่ยน และ ปลดล็อกหน้าต่างด้านบนแล้ว
-        if (!isFirstLoad && currentNumber !== null && currentNumber !== 0 && currentNumber !== "0" && audioUnlocked) {
-            try {
-                displayElement.style.transform = "scale(1.15)";
-                setTimeout(() => { displayElement.style.transform = "scale(1)"; }, 300);
-
-                let numStr = currentNumber.toString();
-                let playlist = [];
-
-                for (let i = 0; i < numStr.length; i++) {
-                    let digit = numStr[i];
-                    if (digit >= '0' && digit <= '9') {
-                        playlist.push(digit + ".mp3");
-                    }
-                }
-                playlist.push("Call.mp3"); 
-
-                function playSequence(index) {
-                    if (index >= playlist.length) return;
-                    let audio = new Audio(playlist[index]);
-                    audio.onend = function() { playSequence(index + 1); };
-                    audio.play().catch(e => console.log("เสียงถูกบล็อก"));
-                }
-
-                if (playlist.length > 0) {
-                    playSequence(0);
-                }
-
-            } catch (e) {
-                console.log("Error playing sound", e);
-            }
+        if (!isFirstLoad && audioUnlocked) {
+            playQueueSequence(currentNumber);
         }
-        
         isFirstLoad = false;
+    });
+
+    // ตรวจจับ: สัญญาณกระตุ้นเมื่อมีการกดปุ่ม "เรียกซ้ำ (Recall)"
+    onValue(ref(db, 'queue/recall'), (snapshot) => {
+        if (!isFirstRecallLoad && audioUnlocked) {
+            let currentNumber = document.getElementById('display-ready').innerText;
+            playQueueSequence(currentNumber);
+        }
+        isFirstRecallLoad = false;
     });
 
     // ระบบอัปเดตสื่อโฆษณา
