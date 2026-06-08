@@ -15,27 +15,92 @@
         }
 
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg-dark); margin: 0; padding: 30px; height: 100vh; box-sizing: border-box; display: flex; gap: 30px; overflow: hidden; color: var(--text-main); }
-        .left-panel, .right-panel { flex: 1; display: flex; flex-direction: column; gap: 30px; }
+        .left-panel, .right-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
         
-        .card { background-color: var(--card-dark); border-radius: 40px; padding: 50px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+        /* แถบโลโก้และชื่อร้านด้านบนซ้าย */
+        .brand-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 0 10px;
+            margin-bottom: 5px;
+        }
+        .shop-logo {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%; 
+            object-fit: cover;
+            border: 2px solid var(--accent-yellow);
+        }
+        .shop-name {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            letter-spacing: 1px;
+        }
+        .shop-name span { color: var(--accent-yellow); }
+
+        .card-ready { 
+            background-color: var(--card-dark); 
+            border-radius: 40px; 
+            padding: 30px 30px 40px 30px; 
+            flex: 1.4; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            text-align: center; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        
+        .card-brewing { 
+            background-color: var(--card-dark); 
+            border-radius: 40px; 
+            padding: 30px; 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: flex-start; 
+        }
         
         .q-ready { 
-            font-size: 180px; 
+            font-size: 150px; 
             font-weight: 700; 
             color: var(--bg-dark); 
             background: var(--accent-orange); 
-            padding: 20px 80px; 
+            padding: 10px 70px; 
             border-radius: 40px; 
             line-height: 1; 
-            margin-top: 30px; 
+            margin-top: 15px; 
             box-shadow: 0 15px 40px rgba(230, 100, 48, 0.4); 
             transform: scale(1);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
+        .brewing-list { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 12px; 
+            justify-content: center; 
+            margin-top: 20px; 
+            width: 100%; 
+            overflow: hidden;
+        }
+        .brewing-item { 
+            background: #2A2A2C; 
+            color: var(--text-main); 
+            font-size: 26px; 
+            font-weight: 600; 
+            padding: 8px 20px; 
+            border-radius: 18px; 
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        
         .media-container { width: 100%; height: 100%; border-radius: 40px; overflow: hidden; position: relative; background: #111; }
         .media-content { width: 100%; height: 100%; object-fit: cover; }
-        .brand-logo { position: absolute; top: 30px; right: 40px; background: rgba(238, 220, 130, 0.9); padding: 12px 30px; border-radius: 50px; font-size: 26px; font-weight: 700; color: var(--bg-dark); z-index: 10; }
 
         #unlock-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
@@ -48,6 +113,7 @@
             padding: 20px 50px; border-radius: 50px; font-size: 40px; font-weight: 700;
             margin-bottom: 20px; box-shadow: 0 10px 40px rgba(238, 220, 130, 0.4);
         }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
@@ -58,16 +124,29 @@
     </div>
 
     <div class="left-panel">
-        <div class="card">
-            <h2 style="color: var(--accent-yellow); font-size: 60px; margin: 0;">✅ Ready</h2>
-            <p style="font-size: 26px; color: #8E8D93; margin-top: 10px;">เชิญรับเครื่องดื่มที่เคาน์เตอร์ค่ะ</p>
+        
+        <!-- ส่วนหัว: โลโก้และชื่อร้าน -->
+        <div class="brand-header">
+            <!-- อัปเดตชื่อไฟล์เป็น IMG_3672.png แล้วครับ -->
+            <img src="IMG_3672.png" alt="Logo" class="shop-logo" onerror="this.src='https://images.unsplash.com/photo-1511920170033-f8396924c348?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80'">
+            <h1 class="shop-name">Balenrista<span>.</span></h1>
+        </div>
+
+        <div class="card-ready">
+            <h2 style="color: var(--accent-yellow); font-size: 45px; margin: 0;">✅ Ready</h2>
+            <p style="font-size: 20px; color: #8E8D93; margin: 5px 0 0 0;">เชิญรับเครื่องดื่มที่เคาน์เตอร์ค่ะ</p>
             <div id="display-ready" class="q-ready">0</div>
+        </div>
+        
+        <div class="card-brewing">
+            <h3 style="color: #8E8D93; font-size: 22px; margin: 0; font-weight: 600;">☕ กำลังทำอยู่ (Preparing)</h3>
+            <div id="brewing-list-display" class="brewing-list">
+            </div>
         </div>
     </div>
 
     <div class="right-panel">
         <div class="media-container">
-            <div class="brand-logo">Balenrista.</div>
             <div id="media-viewer" style="width:100%; height:100%;">
                 <img class="media-content" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80">
             </div>
@@ -95,12 +174,10 @@
     let audioUnlocked = false; 
     let player = document.getElementById('queue-audio');
 
-    // ฟังก์ชันส่วนกลางสำหรับการเล่นเสียงคิว (ใช้ร่วมกันทั้งตอนเปลี่ยนเลขและตอนเรียกซ้ำ)
     function playQueueSequence(currentNumber) {
         if (currentNumber === null || currentNumber === 0 || currentNumber === "0") return;
 
         try {
-            // เอฟเฟกต์ขยายตัวเลขคิวแบบ Pop-up ดึงดูดสายตา
             let displayElement = document.getElementById('display-ready');
             displayElement.style.transform = "scale(1.15)";
             setTimeout(() => { displayElement.style.transform = "scale(1)"; }, 300);
@@ -108,27 +185,23 @@
             let numStr = currentNumber.toString();
             let playlist = [];
 
-            // 1. จัดคิวไฟล์ตัวเลขเสียง Botnoi ตามเลขคิว
             for (let i = 0; i < numStr.length; i++) {
                 let digit = numStr[i];
                 if (digit >= '0' && digit <= '9') {
                     playlist.push(digit + ".mp3");
                 }
             }
-            
-            // 2. ปิดท้ายด้วยประโยคเชิญ
             playlist.push("Call.mp3"); 
 
             player.volume = 1.0;
 
-            // 3. เริ่มเล่นต่อเนื่องกันแบบลูกโซ่
             function playSequence(index) {
                 if (index >= playlist.length) return;
                 player.src = playlist[index];
                 player.onended = function() { 
                     playSequence(index + 1); 
                 };
-                player.play().catch(e => console.log("เสียงสะดุดจากเบราว์เซอร์"));
+                player.play().catch(e => console.log("Audio play blocked"));
             }
 
             if (playlist.length > 0) {
@@ -140,7 +213,6 @@
         }
     }
 
-    // ปลดล็อกเกราะป้องกันเสียงของ Apple
     document.getElementById('unlock-overlay').addEventListener('click', function() {
         player.src = "0.mp3";
         player.volume = 0.01;
@@ -152,11 +224,10 @@
                 let overlay = document.getElementById('unlock-overlay');
                 overlay.style.opacity = '0';
                 setTimeout(() => overlay.style.display = 'none', 500);
-            }).catch(e => console.log("รอสิทธิ์"));
+            }).catch(e => console.log("Unlock failed"));
         }
     });
 
-    // ตรวจจับ: เมื่อมีการเปลี่ยนหมายเลขคิวใหม่
     onValue(ref(db, 'queue/current'), (snapshot) => {
         let currentNumber = snapshot.val();
         document.getElementById('display-ready').innerText = currentNumber !== null ? currentNumber : "0";
@@ -167,7 +238,6 @@
         isFirstLoad = false;
     });
 
-    // ตรวจจับ: สัญญาณกระตุ้นเมื่อมีการกดปุ่ม "เรียกซ้ำ (Recall)"
     onValue(ref(db, 'queue/recall'), (snapshot) => {
         if (!isFirstRecallLoad && audioUnlocked) {
             let currentNumber = document.getElementById('display-ready').innerText;
@@ -176,7 +246,25 @@
         isFirstRecallLoad = false;
     });
 
-    // ระบบอัปเดตสื่อโฆษณา
+    onValue(ref(db, 'queue/waiting_list'), (snapshot) => {
+        const data = snapshot.val();
+        const container = document.getElementById('brewing-list-display');
+        
+        if (data) {
+            let html = '';
+            let count = 0;
+            for (let key in data) {
+                if (count >= 10) break; 
+                let item = data[key];
+                html += `<div class="brewing-item">#${item.queue_number}</div>`;
+                count++;
+            }
+            container.innerHTML = html;
+        } else {
+            container.innerHTML = `<p style="color: #555; font-size: 20px; margin-top: 20px;">กำลังเคลียร์ออเดอร์หมดแล้วจ้า ✨</p>`;
+        }
+    });
+
     onValue(ref(db, 'media/current'), (snapshot) => {
         let media = snapshot.val();
         let viewer = document.getElementById('media-viewer');
