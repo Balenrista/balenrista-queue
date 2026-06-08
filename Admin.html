@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balenrista - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Prompt', sans-serif; background-color: #F8F6F0; padding: 20px; padding-bottom: 100px; margin: 0; color: #2C2A29; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 420px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .header h1 { font-size: 26px; margin: 0; font-weight: 600; }
+        .status { font-size: 13px; color: #4CAF50; background: #E8F5E9; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
+        .card { background-color: #FFFFFF; border-radius: 24px; padding: 30px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 20px; }
+        .queue-number { font-size: 80px; font-weight: 600; margin: 0; line-height: 1; }
+        .bottom-nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background-color: #1A1A1A; padding: 12px 25px; border-radius: 40px; display: flex; gap: 20px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .nav-btn { background: none; border: none; font-size: 24px; cursor: pointer; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
+        .nav-btn:active { transform: scale(0.9); }
+        .nav-btn.primary { background-color: #F4B84B; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Balenrista</h1>
+        <div class="status">● Online</div>
+    </div>
+
+    <div class="card">
+        <div style="color: #8E8D8A; font-size: 15px; margin-bottom: 5px;">คิวที่กำลังเรียก</div>
+        <h2 id="current-queue" class="queue-number">...</h2>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <button id="btn-refresh" class="nav-btn">🔄</button>
+    <button id="btn-recall" class="nav-btn">📢</button>
+    <button id="btn-next" class="nav-btn primary">▶️</button>
+    <button id="btn-skip" class="nav-btn">⏭️</button>
+</nav>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDITDHyj_6Z80vTp209yHUR8QHR2fAh-R0",
+        authDomain: "balenrista---queue.firebaseapp.com",
+        databaseURL: "https://balenrista---queue-default-rtdb.asia-southeast1.firebasedatabase.app/",
+        projectId: "balenrista---queue",
+        storageBucket: "balenrista---queue.firebasestorage.app",
+        messagingSenderId: "925008749007",
+        appId: "1:925008749007:web:3b58b27eeb787c396ab2ba"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const queueRef = ref(db, 'queue/current');
+
+    // ดึงข้อมูลมาโชว์ที่จอพนักงาน
+    onValue(queueRef, (snapshot) => {
+        let current = snapshot.val();
+        document.getElementById('current-queue').innerText = current !== null ? current : "0";
+    });
+
+    // กดปุ่มเรียกคิวถัดไป (+1)
+    document.getElementById('btn-next').addEventListener('click', () => {
+        get(queueRef).then((snapshot) => {
+            let current = snapshot.val() || 0;
+            set(queueRef, current + 1);
+        });
+    });
+
+    // กดปุ่มรีเฟรชเพื่อเริ่มคิวใหม่ (กลับเป็น 0)
+    document.getElementById('btn-refresh').addEventListener('click', () => {
+        if(confirm("ต้องการเริ่มคิวใหม่เป็น 0 ใช่หรือไม่?")) {
+            set(queueRef, 0);
+        }
+    });
+</script>
+
+</body>
+</html>
