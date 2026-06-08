@@ -75,7 +75,7 @@
             if(media.type === 'image') {
                 viewer.innerHTML = `<img class="media-content" src="${media.data}">`;
             } else if (media.type === 'video') {
-                viewer.innerHTML = `<video class="media-content" autoplay loop muted><source src="${media.data}" type="video/mp4"></video>`;
+                viewer.innerHTML = `<video class="media-content" autoplay loop><source src="${media.data}" type="video/mp4"></video>`;
             }
         }
     });
