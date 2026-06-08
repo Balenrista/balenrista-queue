@@ -87,7 +87,7 @@
             <div class="card card-highlight">
                 <div class="queue-label">คิวที่พร้อมเสิร์ฟ (Now Serving)</div>
                 <h2 id="current-queue" class="queue-number">0</h2>
-                <div class="status-badge" id="btn-recall" style="cursor:pointer;" onclick="alert('ส่งสัญญาณเรียกซ้ำแล้ว!')">📢 กดเพื่อเรียกซ้ำ</div>
+                <div class="status-badge" id="btn-recall" style="cursor:pointer;">📢 กดเพื่อเรียกซ้ำ</div>
             </div>
         </div>
     </div>
@@ -133,21 +133,26 @@
     const queueRef = ref(db, 'queue/current');
     const waitingRef = ref(db, 'queue/waiting_list');
     const mediaRef = ref(db, 'media/current');
+    const recallRef = ref(db, 'queue/recall'); // เส้นทางสัญญาณเรียกซ้ำ
 
-    // โลจิกสลับ Tabs และเมนู
+    // โลจิกเมนูสลับหน้า
     document.getElementById('nav-home').addEventListener('click', () => { document.getElementById('queue-section').style.display = 'block'; document.getElementById('media-section').style.display = 'none'; document.getElementById('nav-home').classList.add('active'); document.getElementById('nav-media').classList.remove('active'); });
     document.getElementById('nav-media').addEventListener('click', () => { document.getElementById('queue-section').style.display = 'none'; document.getElementById('media-section').style.display = 'block'; document.getElementById('nav-media').classList.add('active'); document.getElementById('nav-home').classList.remove('active'); });
-    
     document.getElementById('tab-brewing').addEventListener('click', () => { document.getElementById('tab-brewing').classList.add('active'); document.getElementById('tab-ready').classList.remove('active'); document.getElementById('view-brewing').style.display = 'block'; document.getElementById('view-ready').style.display = 'none'; });
     document.getElementById('tab-ready').addEventListener('click', () => { document.getElementById('tab-ready').classList.add('active'); document.getElementById('tab-brewing').classList.remove('active'); document.getElementById('view-ready').style.display = 'block'; document.getElementById('view-brewing').style.display = 'none'; });
 
-    // ดึงเลขคิวปัจจุบัน (พร้อมเสิร์ฟ)
+    // ดึงเลขคิวปัจจุบันมาโชว์
     onValue(queueRef, (snapshot) => {
         let current = snapshot.val();
         document.getElementById('current-queue').innerText = current !== null ? current : "0";
     });
 
-    // ฟังชั่นสำคัญ: ดึงรายการคิวที่รอชงจาก Loyverse มาโชว์
+    // ปุ่มส่งสัญญาณเรียกซ้ำ (Recall) ยิงเวลาปัจจุบันไปกระตุ้นจอ iPad
+    document.getElementById('btn-recall').addEventListener('click', () => {
+        set(recallRef, Date.now());
+    });
+
+    // ดึงรายการกำลังชงจาก Loyverse
     onValue(waitingRef, (snapshot) => {
         const data = snapshot.val();
         const container = document.getElementById('brewing-list-container');
@@ -167,17 +172,12 @@
             }
             container.innerHTML = html;
 
-            // ผูกปุ่ม "เรียกคิวนี้"
             document.querySelectorAll('.call-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     let qNum = e.target.getAttribute('data-num');
                     let qKey = e.target.getAttribute('data-key');
-                    
-                    // 1. ส่งเลขคิวไปที่จอทีวี
                     set(queueRef, qNum);
-                    // 2. ลบออกจากรายการกำลังชง
                     remove(ref(db, 'queue/waiting_list/' + qKey));
-                    // 3. สลับหน้าจอไปที่แท็บ "พร้อมเสิร์ฟ" ทันที
                     document.getElementById('tab-ready').click();
                 });
             });
@@ -186,11 +186,11 @@
         }
     });
 
-    // ปุ่ม Plus (+1)
+    // ปุ่มบวกเลขคิว (+1)
     document.getElementById('nav-next').addEventListener('click', () => { get(queueRef).then((snapshot) => { set(queueRef, (snapshot.val() || 0) + 1); }); });
-    // ปุ่ม Refresh
+    // ปุ่มล้างคิวกลับเป็นศูนย์
     document.getElementById('nav-refresh').addEventListener('click', () => { if(confirm("เริ่มคิวใหม่เป็น 0 หรือไม่?")) { set(queueRef, 0); remove(waitingRef); }});
-    // เปลี่ยนรูป / วิดีโอ
+    // เปลี่ยนรูปโฆษณา
     document.getElementById('upload-image').addEventListener('change', function(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onloadend = function() { set(mediaRef, { type: 'image', data: reader.result }); document.getElementById('upload-status').style.display = 'block'; setTimeout(() => document.getElementById('upload-status').style.display = 'none', 3000); }; reader.readAsDataURL(file); });
     document.getElementById('btn-set-video').addEventListener('click', function() { const url = document.getElementById('video-url').value; if(url) { set(mediaRef, { type: 'video', data: url }); alert("อัปเดตวิดีโอแล้ว!"); document.getElementById('video-url').value = ''; }});
 </script>
