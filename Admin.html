@@ -3,82 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Balenrista - Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <title>Balenrista - Display</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Prompt', sans-serif; background-color: #F8F6F0; padding: 20px; padding-bottom: 100px; margin: 0; color: #2C2A29; display: flex; justify-content: center; }
-        .container { width: 100%; max-width: 420px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .header h1 { font-size: 26px; margin: 0; font-weight: 600; }
-        .status { font-size: 13px; color: #4CAF50; background: #E8F5E9; padding: 4px 12px; border-radius: 20px; font-weight: 500; }
-        .card { background-color: #FFFFFF; border-radius: 24px; padding: 30px 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 20px; }
-        .queue-number { font-size: 80px; font-weight: 600; margin: 0; line-height: 1; }
-        .bottom-nav { position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background-color: #1A1A1A; padding: 12px 25px; border-radius: 40px; display: flex; gap: 20px; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .nav-btn { background: none; border: none; font-size: 24px; cursor: pointer; border-radius: 50%; width: 50px; height: 50px; display: flex; justify-content: center; align-items: center; transition: 0.2s; }
-        .nav-btn:active { transform: scale(0.9); }
-        .nav-btn.primary { background-color: #F4B84B; }
+        :root {
+            --bg-dark: #000000;
+            --card-dark: #1C1C1E;
+            --text-main: #F5F5F5;
+            --accent-yellow: #EEDC82;
+            --accent-orange: #E66430;
+        }
+
+        body { font-family: 'Prompt', sans-serif; background-color: var(--bg-dark); margin: 0; padding: 30px; height: 100vh; box-sizing: border-box; display: flex; gap: 30px; overflow: hidden; color: var(--text-main); }
+        .left-panel, .right-panel { flex: 1; display: flex; flex-direction: column; gap: 30px; }
+        
+        /* การ์ดซ้าย (คิว) */
+        .card { background-color: var(--card-dark); border-radius: 40px; padding: 50px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+        
+        .q-ready { font-size: 180px; font-weight: 700; color: var(--bg-dark); background: var(--accent-orange); padding: 20px 80px; border-radius: 40px; line-height: 1; margin-top: 30px; box-shadow: 0 15px 40px rgba(230, 100, 48, 0.4); }
+        
+        /* การ์ดขวา (สื่อโฆษณา) */
+        .media-container { width: 100%; height: 100%; border-radius: 40px; overflow: hidden; position: relative; background: #111; }
+        .media-content { width: 100%; height: 100%; object-fit: cover; }
+        .brand-logo { position: absolute; top: 30px; right: 40px; background: rgba(238, 220, 130, 0.9); padding: 12px 30px; border-radius: 50px; font-size: 26px; font-weight: 700; color: var(--bg-dark); z-index: 10; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="header">
-        <h1>Balenrista</h1>
-        <div class="status">● Online</div>
+    <div class="left-panel">
+        <div class="card">
+            <h2 style="color: var(--accent-yellow); font-size: 60px; margin: 0;">✅ Ready</h2>
+            <p style="font-size: 26px; color: #8E8D93; margin-top: 10px;">เชิญรับเครื่องดื่มที่เคาน์เตอร์ค่ะ</p>
+            <div id="display-ready" class="q-ready">...</div>
+        </div>
     </div>
 
-    <div class="card">
-        <div style="color: #8E8D8A; font-size: 15px; margin-bottom: 5px;">คิวที่กำลังเรียก</div>
-        <h2 id="current-queue" class="queue-number">...</h2>
+    <div class="right-panel">
+        <div class="media-container">
+            <div class="brand-logo">Balenrista.</div>
+            <div id="media-viewer" style="width:100%; height:100%;">
+                <img class="media-content" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80">
+            </div>
+        </div>
     </div>
-</div>
-
-<nav class="bottom-nav">
-    <button id="btn-refresh" class="nav-btn">🔄</button>
-    <button id="btn-recall" class="nav-btn">📢</button>
-    <button id="btn-next" class="nav-btn primary">▶️</button>
-    <button id="btn-skip" class="nav-btn">⏭️</button>
-</nav>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDITDHyj_6Z80vTp209yHUR8QHR2fAh-R0",
         authDomain: "balenrista---queue.firebaseapp.com",
         databaseURL: "https://balenrista---queue-default-rtdb.asia-southeast1.firebasedatabase.app/",
-        projectId: "balenrista---queue",
-        storageBucket: "balenrista---queue.firebasestorage.app",
-        messagingSenderId: "925008749007",
-        appId: "1:925008749007:web:3b58b27eeb787c396ab2ba"
+        projectId: "balenrista---queue"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const queueRef = ref(db, 'queue/current');
-
-    // ดึงข้อมูลมาโชว์ที่จอพนักงาน
-    onValue(queueRef, (snapshot) => {
-        let current = snapshot.val();
-        document.getElementById('current-queue').innerText = current !== null ? current : "0";
+    
+    // อัปเดตเลขคิว
+    onValue(ref(db, 'queue/current'), (snapshot) => {
+        let currentNumber = snapshot.val();
+        document.getElementById('display-ready').innerText = currentNumber !== null ? currentNumber : "0";
     });
 
-    // กดปุ่มเรียกคิวถัดไป (+1)
-    document.getElementById('btn-next').addEventListener('click', () => {
-        get(queueRef).then((snapshot) => {
-            let current = snapshot.val() || 0;
-            set(queueRef, current + 1);
-        });
-    });
-
-    // กดปุ่มรีเฟรชเพื่อเริ่มคิวใหม่ (กลับเป็น 0)
-    document.getElementById('btn-refresh').addEventListener('click', () => {
-        if(confirm("ต้องการเริ่มคิวใหม่เป็น 0 ใช่หรือไม่?")) {
-            set(queueRef, 0);
+    // อัปเดตสื่อโฆษณา (รูปภาพ/วิดีโอ)
+    onValue(ref(db, 'media/current'), (snapshot) => {
+        let media = snapshot.val();
+        let viewer = document.getElementById('media-viewer');
+        if(media) {
+            if(media.type === 'image') {
+                viewer.innerHTML = `<img class="media-content" src="${media.data}">`;
+            } else if (media.type === 'video') {
+                viewer.innerHTML = `<video class="media-content" autoplay loop muted><source src="${media.data}" type="video/mp4"></video>`;
+            }
         }
     });
 </script>
-
 </body>
 </html>
