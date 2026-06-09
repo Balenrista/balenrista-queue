@@ -17,24 +17,25 @@
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg-dark); margin: 0; padding: 30px; height: 100vh; box-sizing: border-box; display: flex; gap: 30px; overflow: hidden; color: var(--text-main); }
         .left-panel, .right-panel { flex: 1; display: flex; flex-direction: column; gap: 20px; }
         
-        /* เอาขอบโลโก้ออกแล้วครับ */
+        /* เอาขอบทองออกแล้ว โลโก้กลมเนียนๆ */
         .brand-header { display: flex; align-items: center; gap: 15px; padding: 0 10px; margin-bottom: 5px; }
-        .shop-logo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; } 
+        .shop-logo { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; }
         .shop-name { font-size: 40px; font-weight: 700; color: var(--text-main); margin: 0; }
         .shop-name span { font-weight: 300; opacity: 0.7; color: var(--accent-yellow); }
 
-        .card-ready { background-color: var(--card-dark); border-radius: 40px; padding: 30px; flex: 1.4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-        .card-brewing { background-color: var(--card-dark); border-radius: 40px; padding: 30px; flex: 1; display: flex; flex-direction: column; align-items: center; }
+        .card-ready { background-color: var(--card-dark); border-radius: 40px; padding: 30px; flex: 1.4; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; position: relative; overflow: hidden; }
+        .card-brewing { background-color: var(--card-dark); border-radius: 40px; padding: 30px; flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
         
-        .q-ready { font-size: 150px; font-weight: 700; color: var(--bg-dark); background: var(--accent-orange); padding: 10px 70px; border-radius: 40px; line-height: 1; margin-top: 15px; box-shadow: 0 15px 40px rgba(230, 100, 48, 0.4); transition: transform 0.3s; }
-        .brewing-list { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; width: 100%; }
+        .q-ready { font-size: 150px; font-weight: 700; color: var(--bg-dark); background: var(--accent-orange); padding: 10px 70px; border-radius: 40px; line-height: 1; margin-top: 15px; box-shadow: 0 15px 40px rgba(230, 100, 48, 0.4); transform: scale(1); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        .brewing-list { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; width: 100%; overflow: hidden; }
         .brewing-item { background: #2A2A2C; color: var(--text-main); font-size: 26px; font-weight: 600; padding: 8px 20px; border-radius: 18px; animation: fadeIn 0.4s ease-in-out; }
         
         .media-container { width: 100%; height: 100%; border-radius: 40px; overflow: hidden; position: relative; background: #111; }
         .media-content { width: 100%; height: 100%; object-fit: cover; }
 
-        #unlock-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; }
-        .unlock-btn { background: var(--accent-yellow); color: var(--bg-dark); padding: 20px 50px; border-radius: 50px; font-size: 40px; font-weight: 700; margin-bottom: 20px; }
+        #unlock-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0, 0, 0, 0.95); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; transition: opacity 0.5s; }
+        .unlock-btn { background: var(--accent-yellow); color: var(--bg-dark); padding: 20px 50px; border-radius: 50px; font-size: 40px; font-weight: 700; margin-bottom: 20px; box-shadow: 0 10px 40px rgba(238, 220, 130, 0.4); }
         @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
@@ -42,7 +43,7 @@
 
     <div id="unlock-overlay">
         <div class="unlock-btn">👆 แตะที่นี่เพื่อเริ่มระบบ</div>
-        <p style="color: #8E8D93; font-size: 24px;">(เพื่อเปิดใช้งานระบบเสียง)</p>
+        <p style="color: #8E8D93; font-size: 24px;">(เพื่อเปิดใช้งานระบบเสียงของ iPad)</p>
     </div>
 
     <div class="left-panel">
@@ -53,18 +54,19 @@
 
         <div class="card-ready">
             <h2 style="color: var(--accent-yellow); font-size: 40px; margin: 0;">✅ Ready</h2>
+            <p style="font-size: 20px; color: #8E8D93; margin: 5px 0 0 0;">เชิญรับเครื่องดื่มที่เคาน์เตอร์ค่ะ</p>
             <div id="display-ready" class="q-ready">0</div>
         </div>
         
         <div class="card-brewing">
-            <h3 style="color: #8E8D93; font-size: 22px; margin: 0;">☕ กำลังทำอยู่ (Preparing)</h3>
+            <h3 style="color: #8E8D93; font-size: 22px; margin: 0; font-weight: 600;">☕ กำลังทำอยู่ (Preparing)</h3>
             <div id="brewing-list-display" class="brewing-list"></div>
         </div>
     </div>
 
     <div class="right-panel">
         <div class="media-container" id="media-viewer">
-            <img class="media-content" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=1000&q=80">
+            <img class="media-content" src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-1.2.1&auto=format&fit=crop&w=1000&q=80">
         </div>
     </div>
 
@@ -83,50 +85,117 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     
-    let audioUnlocked = false;
+    let isFirstLoad = true;
+    let isFirstRecallLoad = true;
+    let audioUnlocked = false; 
     let player = document.getElementById('queue-audio');
 
-    // ระบบเสียง
-    function playSequence(playlist, index) {
-        if (index >= playlist.length) return;
-        player.src = playlist[index];
-        player.onended = () => playSequence(playlist, index + 1);
-        player.play().catch(console.log);
+    // ฟังก์ชันเปิดเสียงเรียงลำดับไฟล์ (เอาตัวเต็มกลับมาแล้วครับ!)
+    function playQueueSequence(currentNumber) {
+        if (currentNumber === null || currentNumber === 0 || currentNumber === "0") return;
+
+        try {
+            let displayElement = document.getElementById('display-ready');
+            displayElement.style.transform = "scale(1.15)";
+            setTimeout(() => { displayElement.style.transform = "scale(1)"; }, 300);
+
+            let numStr = currentNumber.toString();
+            let playlist = [];
+
+            for (let i = 0; i < numStr.length; i++) {
+                let digit = numStr[i];
+                if (digit >= '0' && digit <= '9') {
+                    playlist.push(digit + ".mp3");
+                }
+            }
+            playlist.push("Call.mp3"); 
+
+            player.volume = 1.0;
+
+            function playSequence(index) {
+                if (index >= playlist.length) return;
+                player.src = playlist[index];
+                player.onended = function() { 
+                    playSequence(index + 1); 
+                };
+                player.play().catch(e => console.log("Audio play blocked"));
+            }
+
+            if (playlist.length > 0) {
+                playSequence(0);
+            }
+        } catch (e) {
+            console.log("Error playing sequence", e);
+        }
     }
 
-    document.getElementById('unlock-overlay').addEventListener('click', () => {
-        player.src = "0.mp3"; 
+    // ปลดล็อกระบบเสียง
+    document.getElementById('unlock-overlay').addEventListener('click', function() {
+        player.src = "0.mp3";
         player.volume = 0.01;
-        player.play().then(() => {
-            audioUnlocked = true;
-            document.getElementById('unlock-overlay').style.display = 'none';
-        });
+        let playPromise = player.play();
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                setTimeout(() => player.pause(), 100);
+                audioUnlocked = true;
+                let overlay = document.getElementById('unlock-overlay');
+                overlay.style.opacity = '0';
+                setTimeout(() => overlay.style.display = 'none', 500);
+            }).catch(e => console.log("Unlock failed"));
+        }
     });
 
-    // อัปเดตคิวหลัก
-    onValue(ref(db, 'queue/current'), (s) => {
-        const val = s.val();
-        document.getElementById('display-ready').innerText = val || "0";
-        if (audioUnlocked && val) playSequence([val.toString()+".mp3", "Call.mp3"], 0);
+    // ดึงคิวใหม่มาโชว์ + เรียกเสียง
+    onValue(ref(db, 'queue/current'), (snapshot) => {
+        let currentNumber = snapshot.val();
+        document.getElementById('display-ready').innerText = currentNumber !== null ? currentNumber : "0";
+
+        if (!isFirstLoad && audioUnlocked) {
+            playQueueSequence(currentNumber);
+        }
+        isFirstLoad = false;
+    });
+
+    // รับสัญญาณปุ่ม "เรียกซ้ำ (Recall)" คืนชีพ!
+    onValue(ref(db, 'queue/recall'), (snapshot) => {
+        if (!isFirstRecallLoad && audioUnlocked) {
+            let currentNumber = document.getElementById('display-ready').innerText;
+            playQueueSequence(currentNumber);
+        }
+        isFirstRecallLoad = false;
     });
 
     // อัปเดตรายการกำลังทำ
-    onValue(ref(db, 'queue/waiting_list'), (s) => {
-        const data = s.val();
+    onValue(ref(db, 'queue/waiting_list'), (snapshot) => {
+        const data = snapshot.val();
         const container = document.getElementById('brewing-list-display');
+        
         if (data) {
-            container.innerHTML = Object.values(data).slice(0, 10).map(i => `<div class="brewing-item">#${i.queue_number}</div>`).join('');
+            let html = '';
+            let count = 0;
+            for (let key in data) {
+                if (count >= 10) break; 
+                let item = data[key];
+                html += `<div class="brewing-item">#${item.queue_number}</div>`;
+                count++;
+            }
+            container.innerHTML = html;
         } else {
-            container.innerHTML = `<p style="color:#555;">ไม่มีออเดอร์ค้าง</p>`;
+            container.innerHTML = `<p style="color: #555; font-size: 20px; margin-top: 20px;">กำลังเคลียร์ออเดอร์หมดแล้วจ้า ✨</p>`;
         }
     });
 
     // อัปเดตสื่อ
-    onValue(ref(db, 'media/current'), (s) => {
-        const m = s.val();
-        if(m) document.getElementById('media-viewer').innerHTML = m.type === 'video' ? 
-            `<video class="media-content" autoplay loop muted playsinline><source src="${m.data}"></video>` : 
-            `<img class="media-content" src="${m.data}">`;
+    onValue(ref(db, 'media/current'), (snapshot) => {
+        let media = snapshot.val();
+        let viewer = document.getElementById('media-viewer');
+        if(media) {
+            if(media.type === 'image') {
+                viewer.innerHTML = `<img class="media-content" src="${media.data}">`;
+            } else if (media.type === 'video') {
+                viewer.innerHTML = `<video class="media-content" autoplay loop muted playsinline><source src="${media.data}" type="video/mp4"></video>`;
+            }
+        }
     });
 </script>
 </body>
