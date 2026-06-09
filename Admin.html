@@ -33,14 +33,21 @@
         .queue-label { font-size: 16px; color: var(--text-muted); margin-bottom: 10px; font-weight: 500; }
         .queue-number { font-size: 100px; font-weight: 700; margin: 0; color: var(--text-main); line-height: 1; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
         
-        /* Lists */
+        /* Lists & Buttons */
         .list-card { background: var(--card-dark); border-radius: 20px; padding: 20px; margin-bottom: 15px; }
         .queue-item { background: #2A2A2C; padding: 15px 20px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
         .queue-item:last-child { margin-bottom: 0; }
         .q-num { font-size: 22px; font-weight: 700; color: var(--text-main); }
         .q-time { font-size: 13px; color: var(--text-muted); display: block; margin-top: 5px; }
-        .call-btn { background: var(--accent-orange); color: white; border: none; padding: 10px 18px; border-radius: 12px; font-family: 'Prompt'; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        
+        .action-buttons { display: flex; gap: 8px; }
+        .call-btn { background: var(--accent-orange); color: white; border: none; padding: 10px 16px; border-radius: 12px; font-family: 'Prompt'; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .call-btn:active { transform: scale(0.9); }
+        
+        /* ปุ่มยกเลิกคิว */
+        .cancel-btn { background: #333; color: #bbb; border: 1px solid #444; padding: 10px 12px; border-radius: 12px; font-family: 'Prompt'; font-weight: 500; cursor: pointer; transition: 0.2s; }
+        .cancel-btn:active { transform: scale(0.9); }
+        .cancel-btn:hover { background: #444; color: #ff6b6b; border-color: #ff6b6b; }
 
         /* Media */
         #media-section { display: none; }
@@ -133,26 +140,22 @@
     const queueRef = ref(db, 'queue/current');
     const waitingRef = ref(db, 'queue/waiting_list');
     const mediaRef = ref(db, 'media/current');
-    const recallRef = ref(db, 'queue/recall'); // เส้นทางสัญญาณเรียกซ้ำ
+    const recallRef = ref(db, 'queue/recall'); 
 
-    // โลจิกเมนูสลับหน้า
     document.getElementById('nav-home').addEventListener('click', () => { document.getElementById('queue-section').style.display = 'block'; document.getElementById('media-section').style.display = 'none'; document.getElementById('nav-home').classList.add('active'); document.getElementById('nav-media').classList.remove('active'); });
     document.getElementById('nav-media').addEventListener('click', () => { document.getElementById('queue-section').style.display = 'none'; document.getElementById('media-section').style.display = 'block'; document.getElementById('nav-media').classList.add('active'); document.getElementById('nav-home').classList.remove('active'); });
     document.getElementById('tab-brewing').addEventListener('click', () => { document.getElementById('tab-brewing').classList.add('active'); document.getElementById('tab-ready').classList.remove('active'); document.getElementById('view-brewing').style.display = 'block'; document.getElementById('view-ready').style.display = 'none'; });
     document.getElementById('tab-ready').addEventListener('click', () => { document.getElementById('tab-ready').classList.add('active'); document.getElementById('tab-brewing').classList.remove('active'); document.getElementById('view-ready').style.display = 'block'; document.getElementById('view-brewing').style.display = 'none'; });
 
-    // ดึงเลขคิวปัจจุบันมาโชว์
     onValue(queueRef, (snapshot) => {
         let current = snapshot.val();
         document.getElementById('current-queue').innerText = current !== null ? current : "0";
     });
 
-    // ปุ่มส่งสัญญาณเรียกซ้ำ (Recall) ยิงเวลาปัจจุบันไปกระตุ้นจอ iPad
     document.getElementById('btn-recall').addEventListener('click', () => {
         set(recallRef, Date.now());
     });
 
-    // ดึงรายการกำลังชงจาก Loyverse
     onValue(waitingRef, (snapshot) => {
         const data = snapshot.val();
         const container = document.getElementById('brewing-list-container');
@@ -161,17 +164,22 @@
             let html = `<p style="color: var(--accent-yellow); font-size: 14px; margin-top: 0;">☕ รอทำเครื่องดื่ม (${Object.keys(data).length} คิว)</p>`;
             for (let key in data) {
                 let item = data[key];
+                // เพิ่มปุ่มยกเลิกตรงนี้
                 html += `
                 <div class="queue-item">
                     <div>
                         <span class="q-num">#${item.queue_number}</span>
                         <span class="q-time">เวลา: ${item.time}</span>
                     </div>
-                    <button class="call-btn" data-key="${key}" data-num="${item.queue_number}">เรียกคิวนี้</button>
+                    <div class="action-buttons">
+                        <button class="cancel-btn" data-key="${key}">ยกเลิก</button>
+                        <button class="call-btn" data-key="${key}" data-num="${item.queue_number}">เรียกคิวนี้</button>
+                    </div>
                 </div>`;
             }
             container.innerHTML = html;
 
+            // โลจิกปุ่มเรียกคิว
             document.querySelectorAll('.call-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     let qNum = e.target.getAttribute('data-num');
@@ -181,18 +189,6 @@
                     document.getElementById('tab-ready').click();
                 });
             });
-        } else {
-            container.innerHTML = `<p style="color: var(--text-muted); font-size: 15px; text-align: center; margin: 30px 0;">ยังไม่มีออเดอร์ใหม่</p>`;
-        }
-    });
 
-    // ปุ่มบวกเลขคิว (+1)
-    document.getElementById('nav-next').addEventListener('click', () => { get(queueRef).then((snapshot) => { set(queueRef, (snapshot.val() || 0) + 1); }); });
-    // ปุ่มล้างคิวกลับเป็นศูนย์
-    document.getElementById('nav-refresh').addEventListener('click', () => { if(confirm("เริ่มคิวใหม่เป็น 0 หรือไม่?")) { set(queueRef, 0); remove(waitingRef); }});
-    // เปลี่ยนรูปโฆษณา
-    document.getElementById('upload-image').addEventListener('change', function(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onloadend = function() { set(mediaRef, { type: 'image', data: reader.result }); document.getElementById('upload-status').style.display = 'block'; setTimeout(() => document.getElementById('upload-status').style.display = 'none', 3000); }; reader.readAsDataURL(file); });
-    document.getElementById('btn-set-video').addEventListener('click', function() { const url = document.getElementById('video-url').value; if(url) { set(mediaRef, { type: 'video', data: url }); alert("อัปเดตวิดีโอแล้ว!"); document.getElementById('video-url').value = ''; }});
-</script>
-</body>
-</html>
+            // โลจิกปุ่มยกเลิกคิว
+            document.querySelectorAll('.cancel-btn').forEach(btn
