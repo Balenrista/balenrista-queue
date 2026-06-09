@@ -6,42 +6,31 @@
     <title>Balenrista - Admin Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-dark: #000000;
-            --card-dark: #1C1C1E;
-            --text-main: #F5F5F5;
-            --text-muted: #8E8D93;
-            --accent-yellow: #EEDC82;
-            --accent-orange: #E66430;
-            --radius-lg: 30px;
-        }
-
+        :root { --bg-dark: #000000; --card-dark: #1C1C1E; --text-main: #F5F5F5; --text-muted: #8E8D93; --accent-yellow: #EEDC82; --accent-orange: #E66430; --radius-lg: 30px; }
         body { font-family: 'Prompt', sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; padding: 20px; padding-bottom: 120px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 420px; }
-
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
         .header h1 { font-size: 28px; margin: 0; font-weight: 700; color: var(--accent-yellow); }
         .user-profile { background: var(--card-dark); padding: 8px 16px; border-radius: 20px; font-size: 14px; color: var(--text-muted); }
         .tabs-wrapper { background: var(--card-dark); border-radius: 30px; display: flex; padding: 6px; margin-bottom: 25px; }
         .tab-btn { flex: 1; background: transparent; border: none; color: var(--text-muted); padding: 12px 0; border-radius: 25px; font-family: 'Prompt'; font-size: 14px; font-weight: 500; cursor: pointer; transition: 0.3s; }
         .tab-btn.active { background: var(--accent-orange); color: white; font-weight: 600; }
-
         .card { background-color: var(--card-dark); border-radius: var(--radius-lg); padding: 40px 20px; text-align: center; margin-bottom: 25px; position: relative; overflow: hidden; }
         .card-highlight::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: var(--accent-orange); }
         .queue-label { font-size: 16px; color: var(--text-muted); margin-bottom: 10px; font-weight: 500; }
         .queue-number { font-size: 100px; font-weight: 700; margin: 0; color: var(--text-main); line-height: 1; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
-        
         .list-card { background: var(--card-dark); border-radius: 20px; padding: 20px; margin-bottom: 15px; }
-        .queue-item { background: #2A2A2C; padding: 15px 20px; border-radius: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .queue-item:last-child { margin-bottom: 0; }
+        
+        /* แก้ไข Layout กล่องคิวให้รองรับเมนู */
+        .queue-item { background: #2A2A2C; padding: 15px 20px; border-radius: 15px; margin-bottom: 10px; display: flex; flex-direction: column; }
+        .queue-item-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .q-num { font-size: 22px; font-weight: 700; color: var(--text-main); }
         .q-time { font-size: 13px; color: var(--text-muted); display: block; margin-top: 5px; }
+        .q-items-text { font-size: 13px; color: var(--accent-yellow); margin-top: 10px; background: rgba(238, 220, 130, 0.1); padding: 8px 12px; border-radius: 8px; line-height: 1.4; word-break: break-word; }
         
-        /* ปุ่มจัดการคิว */
         .action-buttons { display: flex; gap: 8px; }
         .call-btn { background: var(--accent-orange); color: white; border: none; padding: 10px 16px; border-radius: 12px; font-family: 'Prompt'; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .call-btn:active { transform: scale(0.9); }
-        
         .cancel-btn { background: #333; color: #bbb; border: 1px solid #444; padding: 10px 12px; border-radius: 12px; font-family: 'Prompt'; font-weight: 500; cursor: pointer; transition: 0.2s; }
         .cancel-btn:active { transform: scale(0.9); }
 
@@ -66,24 +55,16 @@
 <body>
 
 <div class="container">
-    <div class="header">
-        <h1>Balenrista.</h1>
-        <div class="user-profile">Admin Panel</div>
-    </div>
-
+    <div class="header"><h1>Balenrista.</h1><div class="user-profile">Admin Panel</div></div>
     <div id="queue-section">
         <div class="tabs-wrapper">
             <button class="tab-btn active" id="tab-brewing">กำลังชง</button>
             <button class="tab-btn" id="tab-ready">พร้อมเสิร์ฟ</button>
         </div>
-
         <div id="view-brewing" style="display: block;">
-            <div class="list-card" id="brewing-list-container">
-                <p style="color: var(--text-muted); font-size: 14px; text-align: center;">กำลังโหลดข้อมูล...</p>
-            </div>
+            <div class="list-card" id="brewing-list-container"></div>
             <p style="text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 15px;">ระบบอัปเดตอัตโนมัติจาก Loyverse</p>
         </div>
-
         <div id="view-ready" style="display: none;">
             <div class="card card-highlight">
                 <div class="queue-label">คิวที่พร้อมเสิร์ฟ (Now Serving)</div>
@@ -92,16 +73,10 @@
             </div>
         </div>
     </div>
-
     <div id="media-section">
         <div class="media-box">
             <h3>🖼️ เปลี่ยนรูปโปรโมทบนจอทีวี</h3>
-            <div class="file-upload-wrapper">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-                <span>กดเพื่อเลือกรูปภาพ</span>
-                <input type="file" id="upload-image" accept="image/*">
-            </div>
-            <div id="upload-status" style="color: #4CAF50; font-size: 14px; text-align: center; display: none;">✅ เปลี่ยนรูปสำเร็จ!</div>
+            <div class="file-upload-wrapper"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>กดเพื่อเลือกรูปภาพ</span><input type="file" id="upload-image" accept="image/*"></div><div id="upload-status" style="color: #4CAF50; font-size: 14px; text-align: center; display: none;">✅ เปลี่ยนรูปสำเร็จ!</div>
         </div>
         <div class="media-box">
             <h3>🎥 ตั้งค่าวิดีโอ (URL)</h3>
@@ -122,75 +97,42 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getDatabase, ref, set, get, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDITDHyj_6Z80vTp209yHUR8QHR2fAh-R0",
-        authDomain: "balenrista---queue.firebaseapp.com",
-        databaseURL: "https://balenrista---queue-default-rtdb.asia-southeast1.firebasedatabase.app/",
-        projectId: "balenrista---queue"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const queueRef = ref(db, 'queue/current');
-    const waitingRef = ref(db, 'queue/waiting_list');
-    const mediaRef = ref(db, 'media/current');
-    const recallRef = ref(db, 'queue/recall'); 
+    const firebaseConfig = { apiKey: "AIzaSyDITDHyj_6Z80vTp209yHUR8QHR2fAh-R0", authDomain: "balenrista---queue.firebaseapp.com", databaseURL: "https://balenrista---queue-default-rtdb.asia-southeast1.firebasedatabase.app/", projectId: "balenrista---queue" };
+    const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+    const queueRef = ref(db, 'queue/current'); const waitingRef = ref(db, 'queue/waiting_list'); const mediaRef = ref(db, 'media/current'); const recallRef = ref(db, 'queue/recall'); 
 
     document.getElementById('nav-home').addEventListener('click', () => { document.getElementById('queue-section').style.display = 'block'; document.getElementById('media-section').style.display = 'none'; document.getElementById('nav-home').classList.add('active'); document.getElementById('nav-media').classList.remove('active'); });
     document.getElementById('nav-media').addEventListener('click', () => { document.getElementById('queue-section').style.display = 'none'; document.getElementById('media-section').style.display = 'block'; document.getElementById('nav-media').classList.add('active'); document.getElementById('nav-home').classList.remove('active'); });
     document.getElementById('tab-brewing').addEventListener('click', () => { document.getElementById('tab-brewing').classList.add('active'); document.getElementById('tab-ready').classList.remove('active'); document.getElementById('view-brewing').style.display = 'block'; document.getElementById('view-ready').style.display = 'none'; });
     document.getElementById('tab-ready').addEventListener('click', () => { document.getElementById('tab-ready').classList.add('active'); document.getElementById('tab-brewing').classList.remove('active'); document.getElementById('view-ready').style.display = 'block'; document.getElementById('view-brewing').style.display = 'none'; });
 
-    onValue(queueRef, (snapshot) => {
-        let current = snapshot.val();
-        document.getElementById('current-queue').innerText = current !== null ? current : "0";
-    });
-
-    document.getElementById('btn-recall').addEventListener('click', () => {
-        set(recallRef, Date.now());
-    });
+    onValue(queueRef, (snapshot) => { document.getElementById('current-queue').innerText = snapshot.val() !== null ? snapshot.val() : "0"; });
+    document.getElementById('btn-recall').addEventListener('click', () => { set(recallRef, Date.now()); });
 
     onValue(waitingRef, (snapshot) => {
         const data = snapshot.val();
         const container = document.getElementById('brewing-list-container');
-        
         if (data) {
             let html = `<p style="color: var(--accent-yellow); font-size: 14px; margin-top: 0;">☕ รอทำเครื่องดื่ม (${Object.keys(data).length} คิว)</p>`;
             for (let key in data) {
                 let item = data[key];
+                let itemsHtml = item.items ? `<div class="q-items-text">📝 ${item.items}</div>` : '';
                 html += `
                 <div class="queue-item">
-                    <div>
-                        <span class="q-num">#${item.queue_number}</span>
-                        <span class="q-time">เวลา: ${item.time}</span>
+                    <div class="queue-item-top">
+                        <div><span class="q-num">#${item.queue_number}</span><span class="q-time">เวลา: ${item.time}</span></div>
+                        <div class="action-buttons">
+                            <button class="cancel-btn" data-key="${key}">ยกเลิก</button>
+                            <button class="call-btn" data-key="${key}" data-num="${item.queue_number}">เรียกคิวนี้</button>
+                        </div>
                     </div>
-                    <div class="action-buttons">
-                        <button class="cancel-btn" data-key="${key}">ยกเลิก</button>
-                        <button class="call-btn" data-key="${key}" data-num="${item.queue_number}">เรียกคิวนี้</button>
-                    </div>
+                    ${itemsHtml}
                 </div>`;
             }
             container.innerHTML = html;
 
-            document.querySelectorAll('.call-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    let qNum = e.target.getAttribute('data-num');
-                    let qKey = e.target.getAttribute('data-key');
-                    set(queueRef, qNum);
-                    remove(ref(db, 'queue/waiting_list/' + qKey));
-                    document.getElementById('tab-ready').click();
-                });
-            });
-
-            document.querySelectorAll('.cancel-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    let qKey = e.target.getAttribute('data-key');
-                    if(confirm("คุณต้องการ 'ลบ' คิวนี้ออกจากระบบใช่หรือไม่?")) {
-                        remove(ref(db, 'queue/waiting_list/' + qKey));
-                    }
-                });
-            });
-
+            document.querySelectorAll('.call-btn').forEach(btn => { btn.addEventListener('click', (e) => { set(queueRef, e.target.getAttribute('data-num')); remove(ref(db, 'queue/waiting_list/' + e.target.getAttribute('data-key'))); document.getElementById('tab-ready').click(); }); });
+            document.querySelectorAll('.cancel-btn').forEach(btn => { btn.addEventListener('click', (e) => { if(confirm("คุณต้องการ 'ลบ' คิวนี้ออกจากระบบใช่หรือไม่?")) remove(ref(db, 'queue/waiting_list/' + e.target.getAttribute('data-key'))); }); });
         } else {
             container.innerHTML = `<p style="color: var(--text-muted); font-size: 15px; text-align: center; margin: 30px 0;">ยังไม่มีออเดอร์ใหม่</p>`;
         }
@@ -198,8 +140,6 @@
 
     document.getElementById('nav-next').addEventListener('click', () => { get(queueRef).then((snapshot) => { set(queueRef, (snapshot.val() || 0) + 1); }); });
     document.getElementById('nav-refresh').addEventListener('click', () => { if(confirm("เริ่มคิวใหม่เป็น 0 หรือไม่?")) { set(queueRef, 0); remove(waitingRef); }});
-    document.getElementById('upload-image').addEventListener('change', function(e) { const file = e.target.files[0]; if(!file) return; const reader = new FileReader(); reader.onloadend = function() { set(mediaRef, { type: 'image', data: reader.result }); document.getElementById('upload-status').style.display = 'block'; setTimeout(() => document.getElementById('upload-status').style.display = 'none', 3000); }; reader.readAsDataURL(file); });
-    document.getElementById('btn-set-video').addEventListener('click', function() { const url = document.getElementById('video-url').value; if(url) { set(mediaRef, { type: 'video', data: url }); alert("อัปเดตวิดีโอแล้ว!"); document.getElementById('video-url').value = ''; }});
 </script>
 </body>
 </html>
