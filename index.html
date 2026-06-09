@@ -20,7 +20,6 @@
         
         .q-ready { font-size: 150px; font-weight: 700; color: var(--bg-dark); background: var(--accent-orange); padding: 10px 70px; border-radius: 40px; line-height: 1; margin-top: 15px; box-shadow: 0 15px 40px rgba(230, 100, 48, 0.4); transform: scale(1); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         
-        /* แก้ไขรายการกำลังชง ให้รองรับเมนู */
         .brewing-list { display: flex; flex-wrap: wrap; gap: 15px; justify-content: center; margin-top: 20px; width: 100%; align-items: flex-start; }
         .brewing-item { background: #2A2A2C; padding: 12px 18px; border-radius: 18px; animation: fadeIn 0.4s ease-in-out; display: flex; flex-direction: column; align-items: center; text-align: center; max-width: 150px; min-width: 100px;}
         .brewing-num { font-size: 26px; font-weight: 600; color: var(--text-main); }
@@ -79,6 +78,14 @@
             function playSequence(index) {
                 if (index >= playlist.length) return;
                 player.src = playlist[index];
+                
+                // 🌟 [จุดที่แก้ไข: แยกความเร็วเสียง] 🌟
+                if (playlist[index] === "Call.mp3") {
+                    player.playbackRate = 1.0; // ไฟล์ Call เล่นความเร็วปกติที่คุณชอบแล้ว
+                } else {
+                    player.playbackRate = 1.3; // เร่งเสียงตัวเลข 0-9 ให้สับไวและกระชับขึ้น
+                }
+                
                 player.onended = function() { playSequence(index + 1); };
                 player.play().catch(e => console.log("Audio block"));
             }
@@ -110,7 +117,6 @@
             for (let key in data) {
                 if (count >= 10) break; 
                 let item = data[key];
-                // เพิ่มการแสดงผลเมนูตัวเล็กๆ ตรงนี้
                 let itemsHtml = item.items ? `<div class="brewing-menu">${item.items}</div>` : '';
                 html += `<div class="brewing-item"><div class="brewing-num">#${item.queue_number}</div>${itemsHtml}</div>`;
                 count++;
